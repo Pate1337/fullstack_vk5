@@ -1,0 +1,31 @@
+{
+  "name": "fullstack_vk5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pate1337/fullstack_vk5.git"
+  },
+  "author": "Paavo Hemmo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pate1337/fullstack_vk5/issues"
+  },
+  "homepage": "https://github.com/Pate1337/fullstack_vk5#readme",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "dotenv": "^5.0.0",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.6"
+  },
+  "devDependencies": {
+    "jest": "^22.3.0",
+    "nodemon": "^1.15.0"
+  }
+}
