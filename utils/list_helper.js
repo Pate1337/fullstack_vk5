@@ -38,7 +38,6 @@ const mostBlogs = (blogs) => {
       } else {
         authors.push({ author: blog.author, blogs: 1} )
       }
-      console.log(authors)
     }
   })
   /*etsitään author jolla eniten blogeja*/
@@ -69,7 +68,6 @@ const mostLikes = (blogs) => {
       } else {
         authors.push({ author: blog.author, likes: blog.likes } )
       }
-      console.log(authors)
     }
   })
   /*etsitään author jolla eniten blogeja*/
