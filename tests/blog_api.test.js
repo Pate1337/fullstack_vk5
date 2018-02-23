@@ -2,14 +2,19 @@ const supertest = require('supertest')
 const { app, server } = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
-const { initialBlogs, format, blogsInDb } = require('./test_helper')
+const User = require('../models/user')
+const { initialBlogs, initialUsers, blogsInDb, userIdUsedInTests } = require('./test_helper')
 
 
 beforeAll(async () => {
   await Blog.remove({})
+  await User.remove({})
 
   const blogObjects = initialBlogs.map(b => new Blog(b))
+  const userObjects = initialUsers.map(u => new User(u))
+  await Promise.all(userObjects.map(u => u.save()))
   await Promise.all(blogObjects.map(b => b.save()))
+
 })
 
 test('blogs are returned as json', async () => {
@@ -20,7 +25,10 @@ test('blogs are returned as json', async () => {
 })
 
 test('a valid blog can be added', async () => {
+  /*Tähän pitää saada tietokannassa olevan userin id kenttäään userId*/
+  const userId = await userIdUsedInTests()
   const newBlog = {
+    userId: userId,
     title: "First class tests",
     author: "Robert C. Martin",
     url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
@@ -37,16 +45,21 @@ test('a valid blog can be added', async () => {
   const blogsAfter = await blogsInDb()
 
   expect(blogsAfter.length).toBe(blogsBefore.length + 1)
-  expect(blogsAfter).toContainEqual(newBlog)
+  const titles = blogsAfter.map(b => b.title)
+  expect(titles).toContain(newBlog.title)
 })
 
 describe('a blog without', () => {
   test('likes will be given value likes = 0', async () => {
+    /*Tähän pitää saada tietokannassa olevan userin id kenttäään userId*/
+    const userId = await userIdUsedInTests()
     const newBlog = {
+      userId: userId,
       title: "random",
       author: "Paavo",
       url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll"
     }
+    console.log('newBlogin userId: ', newBlog.userId)
     const blogsBefore = await blogsInDb()
     await api
       .post('/api/blogs')
