@@ -1,6 +1,17 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+
+/*Kirjautuneen käyttäjän lisäämä blogi*/
+const getTokenFrom = (request) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
@@ -11,6 +22,13 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
   try {
+    const token = getTokenFrom(request)
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+
+    if (!token || !decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+
     const body = request.body
 
     if (body.title === undefined || body.url === undefined) {
@@ -18,7 +36,8 @@ blogsRouter.post('/', async (request, response) => {
     }
     let blog = request.body
     /*Jotta saadaan blogiin lisääjän tiedot*/
-    const user = await User.findById(body.userId)
+    /*const user = await User.findById(body.userId)*/
+    const user = await User.findById(decodedToken.id)
     /*Kaksi testiä kusee nyt, koska niissä ei määritellä kenttää userId*/
     if (body.likes === undefined) {
       blog = new Blog({
@@ -44,16 +63,31 @@ blogsRouter.post('/', async (request, response) => {
 
     response.status(201).json(Blog.format(blog))
   } catch(exception) {
-    console.log(exception)
-    response.status(500).json({ error: 'something went wrong...' })
+    if (exception.name === 'JsonWebTokenError') {
+      response.status(401).json({ error: exception.message })
+    } else {
+      console.log(exception)
+      response.status(500).json({ error: 'something went wrong...' })
+    }
   }
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
   try {
+    const token = getTokenFrom(request)
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+    if (!token || !decodedToken.id) {
+      return response.status(401).json({ error: 'token missing or invalid' })
+    }
+    const blogToRemove = await Blog.findById(request.params.id)
+    if (blogToRemove.user.toString() !== decodedToken.id.toString()) {
+      return response.status(401).json({ error: 'can not remove other users blogs' })
+    }
+
     await Blog.findByIdAndRemove(request.params.id)
     response.status(204).end()
   } catch (exception) {
+    /*Tänne pomppaa jos ei ole headeria authorization*/
     console.log(exception)
     response.status(400).send({error: 'malformatted id'})
   }

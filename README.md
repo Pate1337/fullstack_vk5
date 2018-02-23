@@ -1,1 +1,9 @@
 # fullstack_vk5
+
+bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IktpcmphdXR1bnV0S8OkeXR0w6Rqw6QiLCJpZCI6IjVhOTAyNGQ4NGNhNmY1NWNjYjFkMzY2ZSIsImlhdCI6MTUxOTM5Njc4NX0.Vv_Jia2Z3AzADrjdfrYYPnyVUnSLYxLt7EwFVIFCR5g
+
+5a9024d84ca6f55ccb1d366e
+
+Nää on blogin lisäämisen testaamiseen tarvittavat tiedot
+
+Loginin testaamiseen KirjautunutKäyttäjä password=salainen
