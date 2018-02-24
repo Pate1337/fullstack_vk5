@@ -36,9 +36,10 @@ blogsRouter.post('/', async (request, response) => {
     }
     let blog = request.body
     /*Jotta saadaan blogiin lisääjän tiedot*/
-    /*const user = await User.findById(body.userId)*/
+    /*const user = await User.findById(body.userId)
+    Bodyn mukana ei tarvitse enää määritellä kenttää userId,
+    koska user kentän arvo kaivetaan headerista*/
     const user = await User.findById(decodedToken.id)
-    /*Kaksi testiä kusee nyt, koska niissä ei määritellä kenttää userId*/
     if (body.likes === undefined) {
       blog = new Blog({
         title: body.title,
@@ -80,6 +81,7 @@ blogsRouter.delete('/:id', async (request, response) => {
       return response.status(401).json({ error: 'token missing or invalid' })
     }
     const blogToRemove = await Blog.findById(request.params.id)
+    console.log('BLOG TO REMOVE', blogToRemove)
     if (blogToRemove.user.toString() !== decodedToken.id.toString()) {
       return response.status(401).json({ error: 'can not remove other users blogs' })
     }

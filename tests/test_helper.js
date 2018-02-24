@@ -1,5 +1,7 @@
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
 const initialBlogs = [
   {
@@ -47,4 +49,14 @@ const userIdUsedInTests = async () => {
   return user[0]._id
 }
 
-module.exports = { initialBlogs, initialUsers, blogsInDb, usersInDb, userIdUsedInTests }
+const testUserToken = async () => {
+  const user = await User.find({username: 'testi1'})
+  const userForToken = {
+    username: user[0].username,
+    id: user[0]._id
+  }
+  const token = jwt.sign(userForToken, process.env.SECRET)
+  return token
+}
+
+module.exports = { initialBlogs, initialUsers, blogsInDb, usersInDb, userIdUsedInTests, testUserToken }

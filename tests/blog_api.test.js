@@ -3,7 +3,7 @@ const { app, server } = require('../index')
 const api = supertest(app)
 const Blog = require('../models/blog')
 const User = require('../models/user')
-const { initialBlogs, initialUsers, blogsInDb, userIdUsedInTests } = require('./test_helper')
+const { initialBlogs, initialUsers, blogsInDb, userIdUsedInTests, testUserToken } = require('./test_helper')
 
 
 beforeAll(async () => {
@@ -24,11 +24,11 @@ test('blogs are returned as json', async () => {
     .expect('Content-Type', /application\/json/)
 })
 
-test('a valid blog can be added', async () => {
+test('a valid blog can be added by a valid user', async () => {
   /*Tähän pitää saada tietokannassa olevan userin id kenttäään userId*/
-  const userId = await userIdUsedInTests()
+  const token = await testUserToken()
   const newBlog = {
-    userId: userId,
+    /*userId: userId,*/
     title: "First class tests",
     author: "Robert C. Martin",
     url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
@@ -39,6 +39,7 @@ test('a valid blog can be added', async () => {
   await api
     .post('/api/blogs')
     .send(newBlog)
+    .set('Authorization', `bearer ${token}`)
     .expect(201)
     .expect('Content-Type', /application\/json/)
 
@@ -49,12 +50,12 @@ test('a valid blog can be added', async () => {
   expect(titles).toContain(newBlog.title)
 })
 
-describe('a blog without', () => {
+describe('Added by a valid user. A blog without', () => {
   test('likes will be given value likes = 0', async () => {
     /*Tähän pitää saada tietokannassa olevan userin id kenttäään userId*/
-    const userId = await userIdUsedInTests()
+    const token = await testUserToken()
     const newBlog = {
-      userId: userId,
+      /*userId: userId,*/
       title: "random",
       author: "Paavo",
       url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll"
@@ -64,6 +65,7 @@ describe('a blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -74,6 +76,7 @@ describe('a blog without', () => {
   })
 
   test('title will not be added', async () => {
+    const token = await testUserToken()
     const newBlog = {
       author: "Paavo",
       url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
@@ -83,6 +86,7 @@ describe('a blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(400)
 
     const blogsAfter = await blogsInDb()
@@ -90,6 +94,7 @@ describe('a blog without', () => {
   })
 
   test('url will not be added', async () => {
+    const token = await testUserToken()
     const newBlog = {
       title: 'random',
       author: "Paavo",
@@ -99,6 +104,7 @@ describe('a blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(400)
 
     const blogsAfter = await blogsInDb()
@@ -106,14 +112,16 @@ describe('a blog without', () => {
   })
 })
 
-describe('deletion of a blog', () => {
+describe('deletion of a blog by a valid user', () => {
   let addedBlog
   beforeAll(async () => {
+    const userId = await userIdUsedInTests()
     addedBlog = new Blog({
       title: 'poistettava blogi',
       author: 'TuhonOma',
       url: 'www.yolo.fi',
-      likes: 4
+      likes: 4,
+      user: userId
     })
     /*Tässä lisätään tietokantaan ilman post-pyyntöä*/
     await addedBlog.save()
@@ -121,9 +129,11 @@ describe('deletion of a blog', () => {
 
   test('DELETE /api/blogs/:id succeeds with proper statuscode', async () => {
     const blogsBefore = await blogsInDb()
-
+    const token = await testUserToken()
+    console.log('lisätyn blogin id: ', addedBlog._id)
     await api
       .delete(`/api/blogs/${addedBlog._id}`)
+      .set('Authorization', `bearer ${token}`)
       .expect(204)
 
     const blogsAfter = await blogsInDb()
