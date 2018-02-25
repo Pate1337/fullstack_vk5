@@ -1,4 +1,5 @@
 const http = require('http')
+const middleware = require('./utils/middleware')
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
@@ -9,6 +10,7 @@ const mongoose = require('mongoose')
 const config = require('./utils/config')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
+/*const bearerToken = require('express-bearer-token')*/
 
 mongoose.connect(config.mongoUrl)
   .then( () => {
@@ -22,6 +24,8 @@ mongoose.Promise = global.Promise
 
 app.use(cors())
 app.use(bodyParser.json())
+/*app.use(bearerToken())*/
+app.use(middleware.tokenExtractor)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)

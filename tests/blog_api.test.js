@@ -39,7 +39,7 @@ test('a valid blog can be added by a valid user', async () => {
   await api
     .post('/api/blogs')
     .send(newBlog)
-    .set('Authorization', `bearer ${token}`)
+    .set('Authorization', `Bearer ${token}`)
     .expect(201)
     .expect('Content-Type', /application\/json/)
 
@@ -65,7 +65,7 @@ describe('Added by a valid user. A blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .set('Authorization', `bearer ${token}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -86,7 +86,7 @@ describe('Added by a valid user. A blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .set('Authorization', `bearer ${token}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(400)
 
     const blogsAfter = await blogsInDb()
@@ -104,7 +104,7 @@ describe('Added by a valid user. A blog without', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .set('Authorization', `bearer ${token}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(400)
 
     const blogsAfter = await blogsInDb()
@@ -133,7 +133,7 @@ describe('deletion of a blog by a valid user', () => {
     console.log('lisätyn blogin id: ', addedBlog._id)
     await api
       .delete(`/api/blogs/${addedBlog._id}`)
-      .set('Authorization', `bearer ${token}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
     const blogsAfter = await blogsInDb()
