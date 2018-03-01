@@ -40,7 +40,8 @@ blogsRouter.post('/', async (request, response) => {
     /*const user = await User.findById(body.userId)
     Bodyn mukana ei tarvitse enää määritellä kenttää userId,
     koska user kentän arvo kaivetaan headerista*/
-    const user = await User.findById(decodedToken.id)
+    const user = await User
+      .findById(decodedToken.id)
     if (body.likes === undefined) {
       blog = new Blog({
         title: body.title,
@@ -63,7 +64,12 @@ blogsRouter.post('/', async (request, response) => {
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
 
-    response.status(201).json(Blog.format(blog))
+    console.log('formatoitu blogi: ', Blog.format(blog))
+    const blogToReturn = await Blog
+      .findById(savedBlog._id)
+      .populate('user', { username: 1, name: 1 })
+    console.log('Tietokannasta haettu populoitu blogi ja formatoitu: ', Blog.format(blogToReturn))
+    response.status(201).json(Blog.format(blogToReturn))
   } catch(exception) {
     if (exception.name === 'JsonWebTokenError') {
       response.status(401).json({ error: exception.message })
@@ -105,12 +111,20 @@ blogsRouter.put('/:id', async (request, response) => {
       title: body.title,
       author: body.author,
       url: body.url,
-      likes: body.likes
+      likes: body.likes,
+      user: body.user
     }
     console.log('requestin mukana tuotu blogi ', blog)
-    await Blog
+    console.log('body.user ', body.user)
+    const modifiedBlog = await Blog
       .findByIdAndUpdate(request.params.id, blog, {new: true})
-    response.status(201).json(blog)
+    console.log('modifiedBlog jsonina: ', modifiedBlog)
+    /*TÄÄLLÄ ON NYT ONGELMA, Nimittäin user on nyt pelkkä id*/
+    /*const blogToReturn = await Blog
+      .findById(request.params.id)
+      .populate('user', { username: 1, name: 1 })*/
+    /*console.log('Palautettava blogi: ', blogToReturn)*/
+    response.status(201).json(modifiedBlog)
   } catch (exception) {
     console.log(exception)
     response.status(400).send({error: 'malformatted id'})
