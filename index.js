@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 const config = require('./utils/config')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
+const path = require('path')
 /*const bearerToken = require('express-bearer-token')*/
 
 mongoose.connect(config.mongoUrl)
@@ -30,7 +31,11 @@ app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 app.use(express.static('build'))
+app.use(express.static(path.join(__dirname, 'build')))
 /*mongoose.Promise = global.Promise*/
+app.get('/*', function (req, res) {
+   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+ })
 
 const server = http.createServer(app)
 
